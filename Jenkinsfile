@@ -26,15 +26,11 @@ stages {
 	
     stage('Check image Git dependencies has no vulnerabilities') {
 	    steps {
-        try {
+        
             withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
                 sh('chmod +x files/checkGit.sh && ./files/checkGit.sh')
-            }
-        } catch (err) {
-            echo err.getMessage()
-            echo "Error detected"
-			throw RuntimeException("Build failed for some specific reason!")
-        }
+           
+       		 }
 	    }
     }
 
@@ -51,18 +47,14 @@ stages {
 
     stage('Scan image with twistcli') {
 	    steps {
-        try {
+        
 		sh 'docker pull pasqu4le/evilpetclinic:latest'
             withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
                 sh 'curl -k -u $TL_USER:$TL_PASS --output ./twistcli https://$TL_CONSOLE/api/v1/util/twistcli'
                 sh 'sudo chmod a+x ./twistcli'
                 sh "./twistcli images scan --u $TL_USER --p $TL_PASS --address https://$TL_CONSOLE --details pasqu4le/evilpetclinic"
             }
-        } catch (err) {
-            echo err.getMessage()
-            echo "Error detected"
-			throw RuntimeException("Build failed for some specific reason!")
-        }
+        
 	    }
     }
 
