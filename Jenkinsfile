@@ -1,6 +1,8 @@
 node {
     files= ['deploy.yml']
-
+    options {
+        ansiColor('xterm')
+    }
     stage('Clone repository') {
         checkout scm
     }
