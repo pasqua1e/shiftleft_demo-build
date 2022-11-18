@@ -1,5 +1,5 @@
 pipeline {
-node {
+stages {
     
 
 
