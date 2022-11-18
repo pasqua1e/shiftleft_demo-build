@@ -1,3 +1,4 @@
+pipeline {
 node {
     
 
@@ -82,4 +83,5 @@ node {
         sh('chmod +x ./files/waas_attacks.sh && ./files/waas_attacks.sh')
     }
     
+}
 }
