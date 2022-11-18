@@ -3,6 +3,9 @@ pipeline {
 	options {
 		ansiColor('xterm')
 	}
+	environment {
+    PRISMA_API_URL='https://api.prismacloud.io'
+}
 stages {
     
 
@@ -60,18 +63,15 @@ stages {
 
 
     stage('Scan K8s yaml manifest with Bridgecrew') {  
-	    steps {
-	withDockerContainer(image: 'kennethreitz/pipenv:latest', args: '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock' ) {
-		withCredentials([string(credentialsId: 'PCCS_API', variable: 'PCCS_API')]) { 
-			
+	steps {
+		withCredentials([string(credentialsId: 'PCCS_API', variable: 'PCCS_API')]) { 	
 			script { 
-                    		sh """export PRISMA_API_URL=https://api.prismacloud.io
-                    		pipenv install
-                    		pipenv run pip install bridgecrew
-                    		pipenv run bridgecrew -s -o cli --directory . --bc-api-key $PCCS_API --repo-id jenkins/$BUILD_TAG"""
-                	}
+				docker.image('bridgecrew/checkov:latest').inside("--entrypoint=''") {
+					sh 'checkov -d . --use-enforcement-rules -o cli --bc-api-key $PCCS_API --repo-id jenkins/$BUILD_TAG'
+				}
+                    	}
 		}
-	}
+	
 	    }
     }
 	
