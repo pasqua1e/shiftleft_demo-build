@@ -1,5 +1,5 @@
-node {
-    files= ['deploy.yml']
+pipeline {
+    
     options {
         ansiColor('xterm')
     }
