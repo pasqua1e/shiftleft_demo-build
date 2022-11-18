@@ -12,13 +12,16 @@ stages {
 
 
     stage('Download latest twistcli') {
+	    steps {
         withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
             sh 'curl -k -v -u $TL_USER:$TL_PASS --output ./twistcli https://$TL_CONSOLE/api/v22.01/util/twistcli'
             sh 'sudo chmod a+x ./twistcli'
         }
+	    }
     }
 	
     stage('Check image Git dependencies has no vulnerabilities') {
+	    steps {
         try {
             withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
                 sh('chmod +x files/checkGit.sh && ./files/checkGit.sh')
@@ -28,18 +31,22 @@ stages {
             echo "Error detected"
 			throw RuntimeException("Build failed for some specific reason!")
         }
+	    }
     }
 
     
     stage('Apply security policies (Policy-as-Code) for evilpetclinic') {
+	    steps {
         withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
             sh('chmod +x files/addPolicies.sh && ./files/addPolicies.sh')
         }
+	    }
     }
 
     
 
     stage('Scan image with twistcli') {
+	    steps {
         try {
 		sh 'docker pull pasqu4le/evilpetclinic:latest'
             withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
@@ -52,10 +59,12 @@ stages {
             echo "Error detected"
 			throw RuntimeException("Build failed for some specific reason!")
         }
+	    }
     }
 
 
     stage('Scan K8s yaml manifest with Bridgecrew') {  
+	    steps {
 	withDockerContainer(image: 'kennethreitz/pipenv:latest', args: '-u root --privileged -v /var/run/docker.sock:/var/run/docker.sock' ) {
 		withCredentials([string(credentialsId: 'PCCS_API', variable: 'PCCS_API')]) { 
 			
@@ -67,22 +76,29 @@ stages {
                 	}
 		}
 	}
+	    }
     }
 	
 
     stage('Deploy evilpetclinic') {
+	    steps {
         sh 'kubectl create ns evil --dry-run -o yaml | kubectl apply -f -'
         sh 'kubectl delete --ignore-not-found=true -f files/deploy.yml -n evil'
         sh 'kubectl apply -f files/deploy.yml -n evil'
         sh 'sleep 30'
+	    }
     }
 
     stage('Run bad Runtime attacks') {
+	    steps {
         sh('chmod +x ./files/runtime_attacks.sh && ./files/runtime_attacks.sh')
-    }
+	    }
+	   }
 
     stage('Run bad HTTP stuff for WAAS to catch') {
+	    steps {
         sh('chmod +x ./files/waas_attacks.sh && ./files/waas_attacks.sh')
+    	}
     }
     
 }
