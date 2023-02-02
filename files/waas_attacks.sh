@@ -1,3 +1,4 @@
+export LC_NUMERIC=en_US.UTF
 CHECKSVC=$(kubectl get svc -n evil|grep evil)
 if [[ $CHECKSVC == *"No resources found"* ]]; then
    echo "nada"
