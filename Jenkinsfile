@@ -67,7 +67,7 @@ stages {
 		withCredentials([string(credentialsId: 'PCCS_API', variable: 'PCCS_API')]) { 	
 			script { 
 				docker.image('bridgecrew/checkov:latest').inside("--entrypoint=''") {
-					sh 'checkov -d . --use-enforcement-rules -o cli --bc-api-key $PCCS_API --repo-id jenkins/$BUILD_TAG'
+					sh 'checkov -s -d . --use-enforcement-rules -o cli --bc-api-key $PCCS_API --repo-id jenkins/$BUILD_TAG'
 				}
                     	}
 		}
